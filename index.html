@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hasil Try Out Kelas IX</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased flex flex-col justify-between">
+
+  <!-- Main Content Wrapper -->
+  <div>
+    <!-- Header / Hero Section -->
+    <header class="border-b border-slate-800 bg-slate-950/50 backdrop-blur sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="p-2 rounded-xl text-white shadow-lg shadow-indigo-500/30">
+            <img src="logo.png" alt="Logo" class="w-10 h-10 object-contain rounded-md" />
+          </div>
+          <div>
+            <h1 class="font-bold text-lg text-white">SMP Muhammadiyah 12 GKB Gresik</h1>
+            <p class="text-xs text-slate-400">Berprestasi, Berbudi, dan Peduli</p>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 my-8 space-y-8">
+      
+      <!-- Pencarian NIS -->
+      <section class="max-w-2xl mx-auto text-center space-y-4">
+        <h2 class="text-3xl font-extrabold text-white">Hasil Tryout Kelas IX</h2>
+        <p class="text-slate-400 text-sm">Tahun Ajaran 2026/2027</p>
+        
+        <div class="relative flex items-center mt-4">
+          <input 
+            type="text" 
+            id="nisInput" 
+            placeholder="Masukkan NIS" 
+            class="w-full bg-slate-800 border border-slate-700 rounded-2xl px-5 py-4 pl-12 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-transparent transition-all shadow-inner"
+          />
+          <i data-lucide="search" class="w-5 h-5 text-slate-400 absolute left-4"></i>
+          <button 
+            onclick="cariNIS()" 
+            class="absolute right-2 bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2.5 rounded-xl font-medium transition-all shadow-md hover:shadow-indigo-500/25 active:scale-95"
+          >
+            Cari
+          </button>
+        </div>
+        <p id="errorMsg" class="text-red-400 text-sm hidden"></p>
+      </section>
+
+      <!-- Hasil Pencarian Siswa -->
+      <section id="resultSection" class="hidden space-y-6">
+        
+        <!-- Card Profil Siswa -->
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-3xl p-6 backdrop-blur">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold uppercase tracking-wider text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20">Profil Siswa</span>
+              </div>
+              <h3 id="studentName" class="text-2xl font-bold text-white mt-2">-</h3>
+              <p id="studentNIS" class="text-slate-400 text-sm">NIS: -</p>
+              <p id="studentClass" class="text-emerald-400 text-sm font-medium mt-0.5">Kelas: -</p>
+            </div>
+            <div id="trendBadge" class="flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-700/50 border border-slate-600/50">
+              <!-- Dynamic trend badge -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Detail Nilai & Grafik Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          <!-- Tabel Detail Nilai -->
+          <div class="bg-slate-800/60 border border-slate-700/60 rounded-3xl p-6 backdrop-blur space-y-4">
+            <h4 class="font-bold text-lg text-white flex items-center gap-2">
+              <i data-lucide="file-text" class="w-5 h-5 text-indigo-400"></i> Rekapitulasi Nilai
+            </h4>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="border-b border-slate-700 text-slate-400 text-xs uppercase tracking-wider">
+                    <th class="py-3 px-2">Sesi</th>
+                    <th class="py-3 px-2">Bahasa Indonesia</th>
+                    <th class="py-3 px-2">Matematika</th>
+                    <th class="py-3 px-2">Rata-Rata</th>
+                  </tr>
+                </thead>
+                <tbody id="scoreTableBody" class="divide-y divide-slate-700/50 text-sm">
+                  <!-- Rows injected dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Grafik Perkembangan -->
+          <div class="bg-slate-800/60 border border-slate-700/60 rounded-3xl p-6 backdrop-blur space-y-4">
+            <h4 class="font-bold text-lg text-white flex items-center gap-2">
+              <i data-lucide="line-chart" class="w-5 h-5 text-indigo-400"></i> Grafik Nilai
+            </h4>
+            <div class="h-64 w-full">
+              <canvas id="scoreChart"></canvas>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Papan Peringkat (Leaderboard) -->
+      <section class="bg-slate-800/60 border border-slate-700/60 rounded-3xl p-6 backdrop-blur space-y-6">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h3 class="text-xl font-bold text-white flex items-center gap-2">
+              <i data-lucide="trophy" class="w-6 h-6 text-yellow-500"></i> Papan Peringkat
+            </h3>
+            <p class="text-xs text-slate-400">Pilih kategori peringkat berdasarkan sesi Try Out atau mata pelajaran</p>
+          </div>
+
+          <!-- Filter Leaderboard -->
+          <div class="flex flex-wrap gap-2">
+            <select id="leaderboardCategory" onchange="updateLeaderboard()" class="bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <option value="TO1">Try Out 1</option>
+              <option value="TO2">Try Out 2</option>
+              <option value="TO3">Try Out 3</option>
+            </select>
+            <select id="leaderboardSubject" onchange="updateLeaderboard()" class="bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <option value="ALL">Rata-Rata Gabungan</option>
+              <option value="INDO">Bahasa Indonesia</option>
+              <option value="MTK">Matematika</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Tabel Leaderboard -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b border-slate-700 text-slate-400 text-xs uppercase tracking-wider">
+                <th class="py-3 px-4">Peringkat</th>
+                <th class="py-3 px-4">Nama Siswa</th>
+                <th class="py-3 px-4">Kelas</th>
+                <th class="py-3 px-4">NIS</th>
+                <th class="py-3 px-4 text-right">Nilai / Skor</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboardBody" class="divide-y divide-slate-700/50 text-sm">
+              <!-- Dynamic Leaderboard Content -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Footer -->
+  <footer class="mt-12 border-t border-slate-800 bg-slate-950/80 py-6 text-center text-slate-400 text-sm backdrop-blur">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col items-center justify-center gap-1 text-center">
+      <div>
+        <i class="w-4 h-4 text-indigo-400"></i>
+        <span>©2026 Sistem Informasi Sekretariat</span>
+      </div>
+      <p class="font-semibold text-slate-400">SMP Muhammadiyah 12 GKB Gresik</p>
+    </div>
+  </footer>
+
+  <script>
+    const GOOGLE_SHEET_API_URL = "https://script.google.com/macros/s/AKfycbyDu6Df3k3lrWbnoimUrTxMJ1zPO9P2jH3a38dDyh2GTsXmAo21qxCzj-glm-j5xkAh/exec";
+
+    let globalData = [];
+    let chartInstance = null;
+
+    lucide.createIcons();
+
+    async function fetchData() {
+      try {
+        const response = await fetch(GOOGLE_SHEET_API_URL);
+        globalData = await response.json();
+        updateLeaderboard();
+      } catch (error) {
+        console.error("Gagal mengambil data dari Spreadsheet:", error);
+      }
+    }
+
+    function cariNIS() {
+      const input = document.getElementById("nisInput").value.trim();
+      const errorMsg = document.getElementById("errorMsg");
+      const resultSection = document.getElementById("resultSection");
+
+      errorMsg.classList.add("hidden");
+
+      if (!input) {
+        errorMsg.textContent = "Silakan masukkan NIS terlebih dahulu.";
+        errorMsg.classList.remove("hidden");
+        return;
+      }
+
+      const student = globalData.find(s => String(s.NIS).trim() === input);
+
+      if (!student) {
+        errorMsg.textContent = "Data NIS tidak ditemukan.";
+        errorMsg.classList.remove("hidden");
+        resultSection.classList.add("hidden");
+        return;
+      }
+
+      resultSection.classList.remove("hidden");
+      document.getElementById("studentName").textContent = student.Nama;
+      document.getElementById("studentNIS").textContent = `NIS: ${student.NIS}`;
+      document.getElementById("studentClass").textContent = `Kelas: ${student.Kelas || '-'}`;
+
+      renderTable(student);
+      renderChart(student);
+      renderTrend(student);
+    }
+
+    function renderTable(student) {
+      const tbody = document.getElementById("scoreTableBody");
+      tbody.innerHTML = "";
+
+      const sessions = [
+        { name: "Try Out 1", indo: Number(student.TO1_Indo), mtk: Number(student.TO1_Mtk) },
+        { name: "Try Out 2", indo: Number(student.TO2_Indo), mtk: Number(student.TO2_Mtk) },
+        { name: "Try Out 3", indo: Number(student.TO3_Indo), mtk: Number(student.TO3_Mtk) },
+      ];
+
+      sessions.forEach(s => {
+        const avg = ((s.indo + s.mtk) / 2).toFixed(1);
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-700/30 transition-colors">
+            <td class="py-3 px-2 font-medium text-white">${s.name}</td>
+            <td class="py-3 px-2 text-slate-300">${s.indo}</td>
+            <td class="py-3 px-2 text-slate-300">${s.mtk}</td>
+            <td class="py-3 px-2 font-bold text-indigo-400">${avg}</td>
+          </tr>
+        `;
+      });
+    }
+
+    function renderChart(student) {
+      const ctx = document.getElementById("scoreChart").getContext("2d");
+
+      if (chartInstance) chartInstance.destroy();
+
+      chartInstance = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: ["Try Out 1", "Try Out 2", "Try Out 3"],
+          datasets: [
+            {
+              label: "Bahasa Indonesia",
+              data: [student.TO1_Indo, student.TO2_Indo, student.TO3_Indo],
+              borderColor: "#818cf8",
+              backgroundColor: "rgba(129, 140, 248, 0.1)",
+              tension: 0.3,
+              fill: true
+            },
+            {
+              label: "Matematika",
+              data: [student.TO1_Mtk, student.TO2_Mtk, student.TO3_Mtk],
+              borderColor: "#34d399",
+              backgroundColor: "rgba(52, 211, 153, 0.1)",
+              tension: 0.3,
+              fill: true
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { labels: { color: "#94a3b8" } }
+          },
+          scales: {
+            x: { ticks: { color: "#94a3b8" }, grid: { color: "#334155" } },
+            y: { ticks: { color: "#94a3b8" }, grid: { color: "#334155" }, min: 0, max: 100 }
+          }
+        }
+      });
+    }
+
+    function renderTrend(student) {
+      const avgTO1 = (Number(student.TO1_Indo) + Number(student.TO1_Mtk)) / 2;
+      const avgTO3 = (Number(student.TO3_Indo) + Number(student.TO3_Mtk)) / 2;
+      const badge = document.getElementById("trendBadge");
+
+      if (avgTO3 > avgTO1) {
+        badge.innerHTML = `
+          <i data-lucide="trending-up" class="w-5 h-5 text-emerald-400"></i>
+          <span class="text-sm font-semibold text-emerald-400">Nilai Meningkat (+${(avgTO3 - avgTO1).toFixed(1)})</span>
+        `;
+      } else if (avgTO3 < avgTO1) {
+        badge.innerHTML = `
+          <i data-lucide="trending-down" class="w-5 h-5 text-rose-400"></i>
+          <span class="text-sm font-semibold text-rose-400">Nilai Menurun (${(avgTO3 - avgTO1).toFixed(1)})</span>
+        `;
+      } else {
+        badge.innerHTML = `
+          <i data-lucide="minus" class="w-5 h-5 text-amber-400"></i>
+          <span class="text-sm font-semibold text-amber-400">Nilai Stabil</span>
+        `;
+      }
+      lucide.createIcons();
+    }
+
+    function updateLeaderboard() {
+      const category = document.getElementById("leaderboardCategory").value;
+      const subject = document.getElementById("leaderboardSubject").value;
+      const tbody = document.getElementById("leaderboardBody");
+
+      if (!globalData.length) return;
+
+      let sorted = [...globalData].map(student => {
+        let score = 0;
+        if (subject === "INDO") {
+          score = Number(student[`${category}_Indo`]);
+        } else if (subject === "MTK") {
+          score = Number(student[`${category}_Mtk`]);
+        } else {
+          score = (Number(student[`${category}_Indo`]) + Number(student[`${category}_Mtk`])) / 2;
+        }
+        return { ...student, calculatedScore: score };
+      });
+
+      sorted.sort((a, b) => b.calculatedScore - a.calculatedScore);
+
+      tbody.innerHTML = "";
+      sorted.forEach((student, index) => {
+        let rankBadge = `<span class="font-bold text-slate-400">#${index + 1}</span>`;
+        if (index === 0) rankBadge = `<span class="text-amber-400 font-bold flex items-center gap-1"><i data-lucide="crown" class="w-4 h-4"></i> #1</span>`;
+        else if (index === 1) rankBadge = `<span class="text-slate-300 font-bold">#2</span>`;
+        else if (index === 2) rankBadge = `<span class="text-amber-600 font-bold">#3</span>`;
+
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-700/30 transition-colors">
+            <td class="py-3 px-4">${rankBadge}</td>
+            <td class="py-3 px-4 font-medium text-white">${student.Nama}</td>
+            <td class="py-3 px-4 text-emerald-400 font-medium">${student.Kelas || '-'}</td>
+            <td class="py-3 px-4 text-slate-400">${student.NIS}</td>
+            <td class="py-3 px-4 text-right font-bold text-indigo-400">${student.calculatedScore.toFixed(1)}</td>
+          </tr>
+        `;
+      });
+      lucide.createIcons();
+    }
+
+    fetchData();
+  </script>
+</body>
+</html>
