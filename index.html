@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hasil Try Out Kelas IX</title>
+  <title>Hasil Try Out Kelas IX - SMPM 12 GKB</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Chart.js CDN -->
@@ -41,8 +41,9 @@
           <input 
             type="text" 
             id="nisInput" 
-            placeholder="Masukkan NIS" 
-            class="w-full bg-slate-800 border border-slate-700 rounded-2xl px-5 py-4 pl-12 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-transparent transition-all shadow-inner"
+            placeholder="Masukkan NIS (contoh: 12345)" 
+            onkeypress="handleKeyPress(event)"
+            class="w-full bg-slate-800 border border-slate-700 rounded-2xl px-5 py-4 pl-12 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all shadow-inner"
           />
           <i data-lucide="search" class="w-5 h-5 text-slate-400 absolute left-4"></i>
           <button 
@@ -52,7 +53,7 @@
             Cari
           </button>
         </div>
-        <p id="errorMsg" class="text-red-400 text-sm hidden"></p>
+        <p id="errorMsg" class="text-red-400 text-sm hidden font-medium"></p>
       </section>
 
       <!-- Hasil Pencarian Siswa -->
@@ -69,8 +70,9 @@
               <p id="studentNIS" class="text-slate-400 text-sm">NIS: -</p>
               <p id="studentClass" class="text-emerald-400 text-sm font-medium mt-0.5">Kelas: -</p>
             </div>
+            
+            <!-- Dynamic trend badge -->
             <div id="trendBadge" class="flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-700/50 border border-slate-600/50">
-              <!-- Dynamic trend badge -->
             </div>
           </div>
         </div>
@@ -81,7 +83,7 @@
           <!-- Tabel Detail Nilai -->
           <div class="bg-slate-800/60 border border-slate-700/60 rounded-3xl p-6 backdrop-blur space-y-4">
             <h4 class="font-bold text-lg text-white flex items-center gap-2">
-              <i data-lucide="file-text" class="w-5 h-5 text-indigo-400"></i> Rekapitulasi Nilai
+              <i data-lucide="file-text" class="w-5 h-5 text-indigo-400"></i> Rekapitulasi Nilai & Peringkat
             </h4>
             <div class="overflow-x-auto">
               <table class="w-full text-left border-collapse">
@@ -91,6 +93,7 @@
                     <th class="py-3 px-2">Bahasa Indonesia</th>
                     <th class="py-3 px-2">Matematika</th>
                     <th class="py-3 px-2">Rata-Rata</th>
+                    <th class="py-3 px-2 text-center">Peringkat</th>
                   </tr>
                 </thead>
                 <tbody id="scoreTableBody" class="divide-y divide-slate-700/50 text-sm">
@@ -118,9 +121,9 @@
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h3 class="text-xl font-bold text-white flex items-center gap-2">
-              <i data-lucide="trophy" class="w-6 h-6 text-yellow-500"></i> Papan Peringkat
+              <i data-lucide="trophy" class="w-6 h-6 text-yellow-500"></i> Papan Peringkat (Top 10)
             </h3>
-            <p class="text-xs text-slate-400">Pilih kategori peringkat berdasarkan sesi Try Out atau mata pelajaran</p>
+            <p class="text-xs text-slate-400">Menampilkan 10 peringkat teratas berdasarkan kategori yang dipilih</p>
           </div>
 
           <!-- Filter Leaderboard -->
@@ -164,8 +167,7 @@
   <footer class="mt-12 border-t border-slate-800 bg-slate-950/80 py-6 text-center text-slate-400 text-sm backdrop-blur">
     <div class="max-w-7xl mx-auto px-4 flex flex-col items-center justify-center gap-1 text-center">
       <div>
-        <i class="w-4 h-4 text-indigo-400"></i>
-        <span>©2026 Sistem Informasi Sekretariat</span>
+        <span>© 2026 Sistem Informasi Sekretariat</span>
       </div>
       <p class="font-semibold text-slate-400">SMP Muhammadiyah 12 GKB Gresik</p>
     </div>
@@ -186,6 +188,12 @@
         updateLeaderboard();
       } catch (error) {
         console.error("Gagal mengambil data dari Spreadsheet:", error);
+      }
+    }
+
+    function handleKeyPress(event) {
+      if (event.key === "Enter") {
+        cariNIS();
       }
     }
 
@@ -221,24 +229,46 @@
       renderTrend(student);
     }
 
+    // Fungsi menghitung peringkat siswa untuk sesi tertentu berdasarkan rata-rata gabungan sesi tersebut
+    function calculateRankForSession(studentNIS, sessionKey) {
+      if (!globalData.length) return "-";
+
+      const ranked = [...globalData].map(s => {
+        const indo = Number(s[`${sessionKey}_Indo`] || 0);
+        const mtk = Number(s[`${sessionKey}_Mtk`] || 0);
+        return {
+          NIS: String(s.NIS).trim(),
+          avg: (indo + mtk) / 2
+        };
+      });
+
+      ranked.sort((a, b) => b.avg - a.avg);
+
+      const rankIndex = ranked.findIndex(s => s.NIS === String(studentNIS).trim());
+      return rankIndex !== -1 ? `#${rankIndex + 1}` : "-";
+    }
+
     function renderTable(student) {
       const tbody = document.getElementById("scoreTableBody");
       tbody.innerHTML = "";
 
       const sessions = [
-        { name: "Try Out 1", indo: Number(student.TO1_Indo), mtk: Number(student.TO1_Mtk) },
-        { name: "Try Out 2", indo: Number(student.TO2_Indo), mtk: Number(student.TO2_Mtk) },
-        { name: "Try Out 3", indo: Number(student.TO3_Indo), mtk: Number(student.TO3_Mtk) },
+        { key: "TO1", name: "Try Out 1", indo: Number(student.TO1_Indo || 0), mtk: Number(student.TO1_Mtk || 0) },
+        { key: "TO2", name: "Try Out 2", indo: Number(student.TO2_Indo || 0), mtk: Number(student.TO2_Mtk || 0) },
+        { key: "TO3", name: "Try Out 3", indo: Number(student.TO3_Indo || 0), mtk: Number(student.TO3_Mtk || 0) },
       ];
 
       sessions.forEach(s => {
         const avg = ((s.indo + s.mtk) / 2).toFixed(1);
+        const rank = calculateRankForSession(student.NIS, s.key);
+        
         tbody.innerHTML += `
           <tr class="hover:bg-slate-700/30 transition-colors">
             <td class="py-3 px-2 font-medium text-white">${s.name}</td>
             <td class="py-3 px-2 text-slate-300">${s.indo}</td>
             <td class="py-3 px-2 text-slate-300">${s.mtk}</td>
             <td class="py-3 px-2 font-bold text-indigo-400">${avg}</td>
+            <td class="py-3 px-2 text-center font-bold text-amber-400 bg-amber-500/10 rounded-lg">${rank}</td>
           </tr>
         `;
       });
@@ -287,19 +317,20 @@
     }
 
     function renderTrend(student) {
-      const avgTO1 = (Number(student.TO1_Indo) + Number(student.TO1_Mtk)) / 2;
-      const avgTO3 = (Number(student.TO3_Indo) + Number(student.TO3_Mtk)) / 2;
+      const avgTO1 = (Number(student.TO1_Indo || 0) + Number(student.TO1_Mtk || 0)) / 2;
+      const avgTO3 = (Number(student.TO3_Indo || 0) + Number(student.TO3_Mtk || 0)) / 2;
+      const diff = avgTO3 - avgTO1;
       const badge = document.getElementById("trendBadge");
 
-      if (avgTO3 > avgTO1) {
+      if (diff > 0) {
         badge.innerHTML = `
           <i data-lucide="trending-up" class="w-5 h-5 text-emerald-400"></i>
-          <span class="text-sm font-semibold text-emerald-400">Nilai Meningkat (+${(avgTO3 - avgTO1).toFixed(1)})</span>
+          <span class="text-sm font-semibold text-emerald-400">Nilai Meningkat (+${diff.toFixed(1)})</span>
         `;
-      } else if (avgTO3 < avgTO1) {
+      } else if (diff < 0) {
         badge.innerHTML = `
           <i data-lucide="trending-down" class="w-5 h-5 text-rose-400"></i>
-          <span class="text-sm font-semibold text-rose-400">Nilai Menurun (${(avgTO3 - avgTO1).toFixed(1)})</span>
+          <span class="text-sm font-semibold text-rose-400">Nilai Menurun (${diff.toFixed(1)})</span>
         `;
       } else {
         badge.innerHTML = `
@@ -319,20 +350,27 @@
 
       let sorted = [...globalData].map(student => {
         let score = 0;
+        const indoVal = Number(student[`${category}_Indo`] || 0);
+        const mtkVal = Number(student[`${category}_Mtk`] || 0);
+
         if (subject === "INDO") {
-          score = Number(student[`${category}_Indo`]);
+          score = indoVal;
         } else if (subject === "MTK") {
-          score = Number(student[`${category}_Mtk`]);
+          score = mtkVal;
         } else {
-          score = (Number(student[`${category}_Indo`]) + Number(student[`${category}_Mtk`])) / 2;
+          score = (indoVal + mtkVal) / 2;
         }
         return { ...student, calculatedScore: score };
       });
 
+      // Urutkan siswa berdasarkan skor tertinggi
       sorted.sort((a, b) => b.calculatedScore - a.calculatedScore);
 
+      // Batasi leaderboard hanya untuk 10 orang teratas
+      const top10 = sorted.slice(0, 10);
+
       tbody.innerHTML = "";
-      sorted.forEach((student, index) => {
+      top10.forEach((student, index) => {
         let rankBadge = `<span class="font-bold text-slate-400">#${index + 1}</span>`;
         if (index === 0) rankBadge = `<span class="text-amber-400 font-bold flex items-center gap-1"><i data-lucide="crown" class="w-4 h-4"></i> #1</span>`;
         else if (index === 1) rankBadge = `<span class="text-slate-300 font-bold">#2</span>`;
@@ -341,9 +379,9 @@
         tbody.innerHTML += `
           <tr class="hover:bg-slate-700/30 transition-colors">
             <td class="py-3 px-4">${rankBadge}</td>
-            <td class="py-3 px-4 font-medium text-white">${student.Nama}</td>
+            <td class="py-3 px-4 font-medium text-white">${student.Nama || '-'}</td>
             <td class="py-3 px-4 text-emerald-400 font-medium">${student.Kelas || '-'}</td>
-            <td class="py-3 px-4 text-slate-400">${student.NIS}</td>
+            <td class="py-3 px-4 text-slate-400">${student.NIS || '-'}</td>
             <td class="py-3 px-4 text-right font-bold text-indigo-400">${student.calculatedScore.toFixed(1)}</td>
           </tr>
         `;
