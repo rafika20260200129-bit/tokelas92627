@@ -132,6 +132,9 @@
               <option value="TO1">Try Out 1</option>
               <option value="TO2">Try Out 2</option>
               <option value="TO3">Try Out 3</option>
+              <option value="TO4">Try Out 4</option>
+              <option value="TO5">Try Out 5</option>
+              <option value="TO6">Try Out 6</option>
             </select>
             <select id="leaderboardSubject" onchange="updateLeaderboard()" class="bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
               <option value="ALL">Rata-Rata Gabungan</option>
@@ -256,6 +259,9 @@
         { key: "TO1", name: "Try Out 1", indo: Number(student.TO1_Indo || 0), mtk: Number(student.TO1_Mtk || 0) },
         { key: "TO2", name: "Try Out 2", indo: Number(student.TO2_Indo || 0), mtk: Number(student.TO2_Mtk || 0) },
         { key: "TO3", name: "Try Out 3", indo: Number(student.TO3_Indo || 0), mtk: Number(student.TO3_Mtk || 0) },
+        { key: "TO4", name: "Try Out 4", indo: Number(student.TO4_Indo || 0), mtk: Number(student.TO4_Mtk || 0) },
+        { key: "TO5", name: "Try Out 5", indo: Number(student.TO5_Indo || 0), mtk: Number(student.TO5_Mtk || 0) },
+        { key: "TO6", name: "Try Out 6", indo: Number(student.TO6_Indo || 0), mtk: Number(student.TO6_Mtk || 0) },
       ];
 
       sessions.forEach(s => {
@@ -282,11 +288,18 @@
       chartInstance = new Chart(ctx, {
         type: "line",
         data: {
-          labels: ["Try Out 1", "Try Out 2", "Try Out 3"],
+          labels: ["Try Out 1", "Try Out 2", "Try Out 3", "Try Out 4", "Try Out 5", "Try Out 6"],
           datasets: [
             {
               label: "Bahasa Indonesia",
-              data: [student.TO1_Indo, student.TO2_Indo, student.TO3_Indo],
+              data: [
+                student.TO1_Indo,
+                student.TO2_Indo,
+                student.TO3_Indo,
+                student.TO4_Indo,
+                student.TO5_Indo,
+                student.TO6_Indo
+              ],
               borderColor: "#818cf8",
               backgroundColor: "rgba(129, 140, 248, 0.1)",
               tension: 0.3,
@@ -294,7 +307,14 @@
             },
             {
               label: "Matematika",
-              data: [student.TO1_Mtk, student.TO2_Mtk, student.TO3_Mtk],
+              data: [
+                student.TO1_Mtk,
+                student.TO2_Mtk,
+                student.TO3_Mtk,
+                student.TO4_Mtk,
+                student.TO5_Mtk,
+                student.TO6_Mtk
+              ],
               borderColor: "#34d399",
               backgroundColor: "rgba(52, 211, 153, 0.1)",
               tension: 0.3,
@@ -318,8 +338,8 @@
 
     function renderTrend(student) {
       const avgTO1 = (Number(student.TO1_Indo || 0) + Number(student.TO1_Mtk || 0)) / 2;
-      const avgTO3 = (Number(student.TO3_Indo || 0) + Number(student.TO3_Mtk || 0)) / 2;
-      const diff = avgTO3 - avgTO1;
+      const avgTO6 = (Number(student.TO6_Indo || 0) + Number(student.TO6_Mtk || 0)) / 2;
+      const diff = avgTO6 - avgTO1;
       const badge = document.getElementById("trendBadge");
 
       if (diff > 0) {
